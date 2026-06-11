@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>管理后台 - 安全登录</title>
+    <style>
+        /* 全局样式 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* 背景装饰发光球 */
+        body::before, body::after {
+            content: '';
+            position: absolute;
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #4f46e5, #06b6d4);
+            filter: blur(80px);
+            opacity: 0.2;
+            z-index: 0;
+        }
+        body::before { top: 15%; left: 20%; }
+        body::after { bottom: 15%; right: 20%; }
+
+        /* 登录容器 */
+        .login-container {
+            position: relative;
+            z-index: 1;
+            width: 400px;
+            padding: 40px;
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            display: block;
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .login-header h2 {
+            color: #ffffff;
+            font-size: 24px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .login-header p {
+            color: #94a3b8;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+            position: relative;
+        }
+
+        .form-group label {
+            display: block;
+            color: #cbd5e1;
+            font-size: 14px;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 16px;
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: #ffffff;
+            font-size: 15px;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+
+        .form-group input:focus {
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+            background: rgba(15, 23, 42, 0.8);
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+            border: none;
+            border-radius: 8px;
+            color: #ffffff;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(79, 70, 229, 0.4);
+            background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
+        }
+
+        .btn-submit:active {
+            transform: translateY(1px);
+        }
+
+        /* 提示信息样式 */
+        .message {
+            margin-top: 16px;
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 14px;
+            text-align: center;
+            display: none;
+        }
+        .message.error {
+            background: rgba(239, 68, 68, 0.15);
+            color: #fca5a5;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            display: block;
+        }
+        .message.success {
+            background: rgba(34, 197, 94, 0.15);
+            color: #86efac;
+            border: 1px solid rgba(34, 197, 94, 0.2);
+            display: block;
+        }
+
+        /* 后台主界面（默认隐藏） */
+        .admin-main {
+            display: none;
+            position: relative;
+            z-index: 1;
+            width: 95vw;
+            max-width: 800px;
+            margin: 20px auto;
+        }
+
+        /* 保留漫画风格后台样式（简化版，与之前类似） */
+        .comic-admin { background: #f7f2fb; border: 3px solid #1b0f2a; border-radius: 18px; box-shadow: 10px 10px 0 #1b0f2a; color: #1b0f2a; }
+        .head { background: linear-gradient(135deg, #c898e8, #a86bff); padding: 18px; display: flex; justify-content: space-between; align-items: center; font-weight: 800; font-size: 16px; }
+        .head-close { text-decoration: none; color: #1b0f2a; background: #fff; border: 2px solid #1b0f2a; border-radius: 8px; padding: 6px 14px; font-weight: 700; }
+        .tabs { display: flex; background: #e9d8f4; border-bottom: 2px solid #1b0f2a; overflow-x: auto; }
+        .tab { padding: 10px 18px; cursor: pointer; font-weight: 700; font-size: 13px; border-right: 2px solid #1b0f2a; background: #fff; white-space: nowrap; }
+        .tab.active { background: #c898e8; }
+        .content { padding: 22px; min-height: 380px; }
+        .panel { display: none; }
+        .panel.active { display: block; }
+        .card { background: #fff; border: 2px solid #1b0f2a; border-radius: 12px; padding: 16px; margin-bottom: 16px; box-shadow: 4px 4px 0 #1b0f2a; }
+        label { font-size: 13px; font-weight: 700; display: block; margin-bottom: 6px; }
+        input { width: 100%; padding: 10px; border: 2px solid #1b0f2a; border-radius: 8px; background: #fff; color: #1b0f2a; }
+        .switch-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px dashed #1b0f2a; }
+        .switch { width: 46px; height: 24px; border: 2px solid #1b0f2a; border-radius: 30px; background: #ddd; position: relative; cursor: pointer; }
+        .switch::after { content: ""; position: absolute; width: 18px; height: 18px; top: 1px; left: 2px; border-radius: 50%; background: #1b0f2a; transition: 0.2s; }
+        .switch.active { background: #c898e8; }
+        .switch.active::after { left: 24px; background: #fff; }
+        .btn { padding: 10px 18px; border: 2px solid #1b0f2a; background: #c898e8; border-radius: 10px; cursor: pointer; font-weight: 700; box-shadow: 4px 4px 0 #1b0f2a; color: #1b0f2a; }
+        .status { padding: 10px 14px; background: #fff; border: 2px solid #1b0f2a; border-radius: 10px; margin-bottom: 16px; font-size: 13px; }
+
+        /* 账本管理样式 */
+        .ledger-board { display: flex; gap: 20px; flex-wrap: wrap; }
+        .ledger-block { flex: 1; min-width: 200px; }
+        .ledger-stats { display: flex; justify-content: space-between; margin-bottom: 8px; font-weight: bold; }
+        .ledger-stats .win { color: #2e7d32; }
+        .ledger-stats .lose { color: #c62828; }
+        .ledger-history { max-height: 150px; overflow-y: auto; font-size: 12px; margin-bottom: 10px; }
+        .ledger-item { display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px dashed #ccc; }
+        .ledger-input-area { display: flex; gap: 8px; align-items: center; }
+        .ledger-input-area input { flex: 1; padding: 8px; border: 2px solid #1b0f2a; border-radius: 8px; }
+        .btn-lose { background: #ffcdd2; color: #b71c1c; }
+        .btn-win { background: #c8e6c9; color: #1b5e20; }
+        .btn-lose:hover, .btn-win:hover { filter: brightness(0.9); }
+    </style>
+</head>
+<body>
+
+<!-- 登录界面 -->
+<div class="login-container" id="loginBox">
+    <div class="login-header">
+        <h2>管理系统登录</h2>
+        <p>请输入密码以继续</p>
+    </div>
+    <form id="loginForm">
+        <div class="form-group">
+            <label for="password">密码</label>
+            <input type="password" id="password" name="password" placeholder="请输入密码" required>
+        </div>
+        <button type="submit" class="btn-submit" id="submitBtn">登 录</button>
+        <div id="messageBox" class="message"></div>
+    </form>
+</div>
+
+<!-- 后台主界面（登录后显示） -->
+<div class="admin-main" id="adminMain">
+    <div class="comic-admin">
+        <div class="head">
+            ⚙️ 控制面板
+            <a href="https://yukecil.github.io/Yukecil/" class="head-close">返回主页</a>
+        </div>
+        <div class="tabs">
+            <div class="tab active">资料编辑</div>
+            <div class="tab">外观设置</div>
+            <div class="tab">系统功能</div>
+            <div class="tab">账本管理</div>
+        </div>
+        <div class="content">
+            <!-- 资料编辑面板 -->
+            <div class="panel active">
+                <div class="status" id="syncStatus">✅ 就绪</div>
+                <div class="card"><label>昵称</label><input id="adminName" value="Yukecil"></div>
+                <div class="card"><label>邮箱</label><input id="adminEmail" value="hello@example.com"></div>
+                <div class="card"><label>Telegram</label><input id="adminTelegram" value="@yourname"></div>
+                <div class="btns" style="text-align:right; margin-top:10px;"><button class="btn" onclick="saveAllToCloud()">💾 保存</button></div>
+            </div>
+            <!-- 外观设置面板 -->
+            <div class="panel">
+                <div class="card"><label>头像地址</label><input id="adminAvatar" placeholder="https://..."></div>
+                <div class="card"><label>手机背景</label><input id="adminBgMobile" placeholder="手机端背景URL"></div>
+                <div class="card"><label>电脑背景</label><input id="adminBgDesktop" placeholder="电脑端背景URL"></div>
+                <div class="btns" style="text-align:right; margin-top:10px;"><button class="btn" onclick="saveAllToCloud()">🖼️ 保存</button></div>
+            </div>
+            <!-- 系统功能面板 -->
+            <div class="panel">
+                <div class="card">
+                    <div class="switch-row"><span>一言展示</span><div class="switch active" id="toggleHitokoto"></div></div>
+                    <div class="switch-row"><span>粒子动画</span><div class="switch active" id="toggleParticles"></div></div>
+                    <div class="switch-row"><span>星空背景</span><div class="switch active" id="toggleStars"></div></div>
+                </div>
+                <div class="btns" style="text-align:right; margin-top:10px;"><button class="btn" onclick="saveAllToCloud()">⚡ 保存开关</button></div>
+            </div>
+            <!-- 账本管理面板 -->
+            <div class="panel">
+                <div class="status" id="ledgerStatus">✅ 已加载云端账本</div>
+                <div class="ledger-board">
+                    <div class="ledger-block">
+                        <div class="card">
+                            <div class="ledger-stats">
+                                <span>六合彩</span>
+                                <span>输 <span id="lhcLoseBack">0</span> | 赢 <span id="lhcWinBack">0</span></span>
+                            </div>
+                            <div class="ledger-history" id="lhcHistoryBack"></div>
+                            <div class="ledger-input-area">
+                                <input type="number" id="lhcAmount" placeholder="金额" min="1">
+                                <button class="btn btn-lose" onclick="addLedger('lhc','lose')">输</button>
+                                <button class="btn btn-win" onclick="addLedger('lhc','win')">赢</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="ledger-block">
+                        <div class="card">
+                            <div class="ledger-stats">
+                                <span>买球/PG</span>
+                                <span>输 <span id="pgLoseBack">0</span> | 赢 <span id="pgWinBack">0</span></span>
+                            </div>
+                            <div class="ledger-history" id="pgHistoryBack"></div>
+                            <div class="ledger-input-area">
+                                <input type="number" id="pgAmount" placeholder="金额" min="1">
+                                <button class="btn btn-lose" onclick="addLedger('pg','lose')">输</button>
+                                <button class="btn btn-win" onclick="addLedger('pg','win')">赢</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ==================== 登录验证逻辑 ====================
+    const VALID_PASSWORD = 'yukecil2024';   // ⚠️ 修改为你想要的密码
+    
+    const loginBox = document.getElementById('loginBox');
+    const adminMain = document.getElementById('adminMain');
+    const loginForm = document.getElementById('loginForm');
+    const passwordInput = document.getElementById('password');
+    const submitBtn = document.getElementById('submitBtn');
+    const messageBox = document.getElementById('messageBox');
+
+    // 检查是否已经登录（localStorage 标记）
+    if (localStorage.getItem('admin_logged_in') === 'true') {
+        loginBox.style.display = 'none';
+        adminMain.style.display = 'block';
+        initAdmin();   // 初始化后台功能
+    }
+
+    loginForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const password = passwordInput.value.trim();
+        
+        if (password === VALID_PASSWORD) {
+            messageBox.textContent = '登录成功！正在进入后台...';
+            messageBox.className = 'message success';
+            submitBtn.textContent = '登录中...';
+            submitBtn.disabled = true;
+            
+            setTimeout(() => {
+                localStorage.setItem('admin_logged_in', 'true');
+                loginBox.style.display = 'none';
+                adminMain.style.display = 'block';
+                initAdmin();
+            }, 1000);
+        } else {
+            messageBox.textContent = '密码错误，请重试';
+            messageBox.className = 'message error';
+            passwordInput.value = '';
+            passwordInput.focus();
+        }
+    });
+
+    // ==================== 后台功能初始化 ====================
+    function initAdmin() {
+        // 定义全局变量（避免与登录脚本冲突）
+        window.tabs = document.querySelectorAll('.tab');
+        window.panels = document.querySelectorAll('.panel');
+        
+        // 标签页切换
+        tabs.forEach((t, i) => {
+            t.addEventListener('click', () => {
+                tabs.forEach(tab => tab.classList.remove('active'));
+                panels.forEach(p => p.classList.remove('active'));
+                t.classList.add('active');
+                panels[i].classList.add('active');
+            });
+        });
+
+        // 开关交互
+        ['toggleHitokoto','toggleParticles','toggleStars'].forEach(id => {
+            document.getElementById(id).addEventListener('click', function(){ this.classList.toggle('active'); });
+        });
+
+        // 暴露保存函数到全局
+        window.saveAllToCloud = saveAllToCloud;
+        window.addLedger = addLedger;
+
+        // JSONBin 配置
+        const BIN_ID = '6a2a15f7da38895dfeaa9630';
+        const API_KEY = '$2a$10$hxCwaa9VTSuns2o6OiUV/.gEIZ1wzMQYlNgwWVf1OfXDNY1lJMkGO';
+        const BIN_URL = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
+
+        // 全局账本数据
+        let ledgerData = { lhc: { win: 0, lose: 0, history: [] }, pg: { win: 0, lose: 0, history: [] } };
+
+        // 加载云端配置
+        async function loadFromCloud() {
+            try {
+                const res = await fetch(`${BIN_URL}/latest`, { headers: { 'X-Master-Key': API_KEY } });
+                const json = await res.json();
+                const data = json.record || {};
+
+                document.getElementById('adminName').value = data.title || 'Yukecil';
+                document.getElementById('adminEmail').value = data.email || '';
+                document.getElementById('adminTelegram').value = data.telegram || '';
+                document.getElementById('adminAvatar').value = data.avatar || '';
+                document.getElementById('adminBgMobile').value = data.bgMobile || '';
+                document.getElementById('adminBgDesktop').value = data.bgDesktop || '';
+                document.getElementById('toggleHitokoto').classList.toggle('active', data.hitokotoEnabled !== false);
+                document.getElementById('toggleParticles').classList.toggle('active', data.particlesEnabled !== false);
+                document.getElementById('toggleStars').classList.toggle('active', data.starsEnabled !== false);
+
+                if (data.ledger) ledgerData = data.ledger;
+                updateLedgerBackUI();
+                document.getElementById('syncStatus').textContent = '✅ 已加载云端配置';
+                document.getElementById('ledgerStatus').textContent = '✅ 已加载云端账本';
+            } catch (e) {
+                document.getElementById('syncStatus').textContent = '❌ 加载失败';
+            }
+        }
+
+        async function saveAllToCloud() {
+            const statusEl = document.getElementById('syncStatus');
+            statusEl.textContent = '⏳ 正在保存...';
+            let currentData = {};
+            try {
+                const res = await fetch(`${BIN_URL}/latest`, { headers: { 'X-Master-Key': API_KEY } });
+                const json = await res.json();
+                currentData = json.record || {};
+            } catch (e) {}
+
+            const newData = {
+                title: document.getElementById('adminName').value.trim(),
+                email: document.getElementById('adminEmail').value.trim(),
+                telegram: document.getElementById('adminTelegram').value.trim(),
+                avatar: document.getElementById('adminAvatar').value.trim(),
+                bgMobile: document.getElementById('adminBgMobile').value.trim(),
+                bgDesktop: document.getElementById('adminBgDesktop').value.trim(),
+                hitokotoEnabled: document.getElementById('toggleHitokoto').classList.contains('active'),
+                particlesEnabled: document.getElementById('toggleParticles').classList.contains('active'),
+                starsEnabled: document.getElementById('toggleStars').classList.contains('active'),
+                ledger: currentData.ledger || ledgerData
+            };
+
+            try {
+                await fetch(BIN_URL, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json', 'X-Master-Key': API_KEY },
+                    body: JSON.stringify(newData)
+                });
+                statusEl.textContent = '✅ 已保存';
+            } catch (e) {
+                statusEl.textContent = '❌ 保存失败';
+            }
+        }
+
+        function updateLedgerBackUI() {
+            document.getElementById('lhcLoseBack').textContent = ledgerData.lhc.lose;
+            document.getElementById('lhcWinBack').textContent = ledgerData.lhc.win;
+            document.getElementById('pgLoseBack').textContent = ledgerData.pg.lose;
+            document.getElementById('pgWinBack').textContent = ledgerData.pg.win;
+
+            renderHistoryBack('lhc', 'lhcHistoryBack');
+            renderHistoryBack('pg', 'pgHistoryBack');
+        }
+
+        function renderHistoryBack(type, containerId) {
+            const container = document.getElementById(containerId);
+            const history = ledgerData[type].history;
+            if (!history || history.length === 0) {
+                container.innerHTML = '<div style="text-align:center;color:#666;">暂无记录</div>';
+                return;
+            }
+            container.innerHTML = history.slice(-10).reverse().map(item => {
+                const isWin = item.action === 'win';
+                return `<div class="ledger-item"><span>${item.time}</span><span style="color:${isWin?'green':'red'}">${isWin?'+':'-'}${item.amount}</span></div>`;
+            }).join('');
+        }
+
+        async function addLedger(type, action) {
+            const amount = parseInt(document.getElementById(`${type}Amount`).value);
+            if (!amount || amount <= 0) return alert('请输入有效金额');
+
+            ledgerData[type][action] += amount;
+            const now = new Date();
+            const timeStr = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+            ledgerData[type].history.push({ action, amount, time: timeStr });
+
+            try {
+                const res = await fetch(`${BIN_URL}/latest`, { headers: { 'X-Master-Key': API_KEY } });
+                const json = await res.json();
+                const cloudData = json.record || {};
+                cloudData.ledger = ledgerData;
+                await fetch(BIN_URL, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json', 'X-Master-Key': API_KEY },
+                    body: JSON.stringify(cloudData)
+                });
+                document.getElementById('ledgerStatus').textContent = '✅ 已同步';
+            } catch (e) {
+                document.getElementById('ledgerStatus').textContent = '❌ 同步失败';
+            }
+
+            updateLedgerBackUI();
+            document.getElementById(`${type}Amount`).value = '';
+        }
+
+        // 启动加载
+        loadFromCloud();
+    }
+</script>
+</body>
+</html>
