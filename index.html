@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>管理后台 - 安全登录</title>
     <style>
-        /* 全局样式 */
         * {
             margin: 0;
             padding: 0;
@@ -23,7 +22,6 @@
             position: relative;
         }
 
-        /* 背景装饰发光球 */
         body::before, body::after {
             content: '';
             position: absolute;
@@ -38,7 +36,6 @@
         body::before { top: 15%; left: 20%; }
         body::after { bottom: 15%; right: 20%; }
 
-        /* 登录容器 */
         .login-container {
             position: relative;
             z-index: 1;
@@ -126,7 +123,6 @@
             transform: translateY(1px);
         }
 
-        /* 提示信息样式 */
         .message {
             margin-top: 16px;
             padding: 10px;
@@ -148,55 +144,154 @@
             display: block;
         }
 
-        /* 后台主界面（默认隐藏） */
         .admin-main {
             display: none;
             position: relative;
             z-index: 1;
             width: 95vw;
-            max-width: 800px;
+            max-width: 900px;
             margin: 20px auto;
         }
 
-        /* 保留漫画风格后台样式（简化版，与之前类似） */
-        .comic-admin { background: #f7f2fb; border: 3px solid #1b0f2a; border-radius: 18px; box-shadow: 10px 10px 0 #1b0f2a; color: #1b0f2a; }
-        .head { background: linear-gradient(135deg, #c898e8, #a86bff); padding: 18px; display: flex; justify-content: space-between; align-items: center; font-weight: 800; font-size: 16px; }
-        .head-close { text-decoration: none; color: #1b0f2a; background: #fff; border: 2px solid #1b0f2a; border-radius: 8px; padding: 6px 14px; font-weight: 700; }
-        .tabs { display: flex; background: #e9d8f4; border-bottom: 2px solid #1b0f2a; overflow-x: auto; }
-        .tab { padding: 10px 18px; cursor: pointer; font-weight: 700; font-size: 13px; border-right: 2px solid #1b0f2a; background: #fff; white-space: nowrap; }
+        .comic-admin {
+            background: #f7f2fb;
+            border: 3px solid #1b0f2a;
+            border-radius: 18px;
+            box-shadow: 10px 10px 0 #1b0f2a;
+            color: #1b0f2a;
+        }
+        .head {
+            background: linear-gradient(135deg, #c898e8, #a86bff);
+            padding: 18px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 800;
+            font-size: 16px;
+        }
+        .head-close {
+            text-decoration: none;
+            color: #1b0f2a;
+            background: #fff;
+            border: 2px solid #1b0f2a;
+            border-radius: 8px;
+            padding: 6px 14px;
+            font-weight: 700;
+        }
+        .tabs {
+            display: flex;
+            background: #e9d8f4;
+            border-bottom: 2px solid #1b0f2a;
+            overflow-x: auto;
+        }
+        .tab {
+            padding: 10px 18px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 13px;
+            border-right: 2px solid #1b0f2a;
+            background: #fff;
+            white-space: nowrap;
+        }
         .tab.active { background: #c898e8; }
         .content { padding: 22px; min-height: 380px; }
         .panel { display: none; }
         .panel.active { display: block; }
-        .card { background: #fff; border: 2px solid #1b0f2a; border-radius: 12px; padding: 16px; margin-bottom: 16px; box-shadow: 4px 4px 0 #1b0f2a; }
+        .card {
+            background: #fff;
+            border: 2px solid #1b0f2a;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+            box-shadow: 4px 4px 0 #1b0f2a;
+        }
         label { font-size: 13px; font-weight: 700; display: block; margin-bottom: 6px; }
-        input { width: 100%; padding: 10px; border: 2px solid #1b0f2a; border-radius: 8px; background: #fff; color: #1b0f2a; }
-        .switch-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px dashed #1b0f2a; }
-        .switch { width: 46px; height: 24px; border: 2px solid #1b0f2a; border-radius: 30px; background: #ddd; position: relative; cursor: pointer; }
-        .switch::after { content: ""; position: absolute; width: 18px; height: 18px; top: 1px; left: 2px; border-radius: 50%; background: #1b0f2a; transition: 0.2s; }
+        input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #1b0f2a;
+            border-radius: 8px;
+            background: #fff;
+            color: #1b0f2a;
+        }
+        .switch-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px dashed #1b0f2a;
+        }
+        .switch {
+            width: 46px;
+            height: 24px;
+            border: 2px solid #1b0f2a;
+            border-radius: 30px;
+            background: #ddd;
+            position: relative;
+            cursor: pointer;
+        }
+        .switch::after {
+            content: "";
+            position: absolute;
+            width: 18px;
+            height: 18px;
+            top: 1px;
+            left: 2px;
+            border-radius: 50%;
+            background: #1b0f2a;
+            transition: 0.2s;
+        }
         .switch.active { background: #c898e8; }
         .switch.active::after { left: 24px; background: #fff; }
-        .btn { padding: 10px 18px; border: 2px solid #1b0f2a; background: #c898e8; border-radius: 10px; cursor: pointer; font-weight: 700; box-shadow: 4px 4px 0 #1b0f2a; color: #1b0f2a; }
-        .status { padding: 10px 14px; background: #fff; border: 2px solid #1b0f2a; border-radius: 10px; margin-bottom: 16px; font-size: 13px; }
+        .btn {
+            padding: 10px 18px;
+            border: 2px solid #1b0f2a;
+            background: #c898e8;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 700;
+            box-shadow: 4px 4px 0 #1b0f2a;
+            color: #1b0f2a;
+        }
+        .status {
+            padding: 10px 14px;
+            background: #fff;
+            border: 2px solid #1b0f2a;
+            border-radius: 10px;
+            margin-bottom: 16px;
+            font-size: 13px;
+        }
 
-        /* 账本管理样式 */
-        .ledger-board { display: flex; gap: 20px; flex-wrap: wrap; }
-        .ledger-block { flex: 1; min-width: 200px; }
-        .ledger-stats { display: flex; justify-content: space-between; margin-bottom: 8px; font-weight: bold; }
+        .ledger-board { display: flex; gap: 16px; flex-wrap: wrap; }
+        .ledger-block { flex: 1; min-width: 180px; }
+        .ledger-stats {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
         .ledger-stats .win { color: #2e7d32; }
         .ledger-stats .lose { color: #c62828; }
         .ledger-history { max-height: 150px; overflow-y: auto; font-size: 12px; margin-bottom: 10px; }
-        .ledger-item { display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px dashed #ccc; }
+        .ledger-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 4px 0;
+            border-bottom: 1px dashed #ccc;
+        }
         .ledger-input-area { display: flex; gap: 8px; align-items: center; }
         .ledger-input-area input { flex: 1; padding: 8px; border: 2px solid #1b0f2a; border-radius: 8px; }
         .btn-lose { background: #ffcdd2; color: #b71c1c; }
         .btn-win { background: #c8e6c9; color: #1b5e20; }
         .btn-lose:hover, .btn-win:hover { filter: brightness(0.9); }
+
+        @media (max-width: 600px) {
+            .ledger-board { flex-direction: column; }
+        }
     </style>
 </head>
 <body>
 
-<!-- 登录界面 -->
 <div class="login-container" id="loginBox">
     <div class="login-header">
         <h2>管理系统登录</h2>
@@ -212,7 +307,6 @@
     </form>
 </div>
 
-<!-- 后台主界面（登录后显示） -->
 <div class="admin-main" id="adminMain">
     <div class="comic-admin">
         <div class="head">
@@ -226,7 +320,6 @@
             <div class="tab">账本管理</div>
         </div>
         <div class="content">
-            <!-- 资料编辑面板 -->
             <div class="panel active">
                 <div class="status" id="syncStatus">✅ 就绪</div>
                 <div class="card"><label>昵称</label><input id="adminName" value="Yukecil"></div>
@@ -234,14 +327,12 @@
                 <div class="card"><label>Telegram</label><input id="adminTelegram" value="@yourname"></div>
                 <div class="btns" style="text-align:right; margin-top:10px;"><button class="btn" onclick="saveAllToCloud()">💾 保存</button></div>
             </div>
-            <!-- 外观设置面板 -->
             <div class="panel">
                 <div class="card"><label>头像地址</label><input id="adminAvatar" placeholder="https://..."></div>
                 <div class="card"><label>手机背景</label><input id="adminBgMobile" placeholder="手机端背景URL"></div>
                 <div class="card"><label>电脑背景</label><input id="adminBgDesktop" placeholder="电脑端背景URL"></div>
                 <div class="btns" style="text-align:right; margin-top:10px;"><button class="btn" onclick="saveAllToCloud()">🖼️ 保存</button></div>
             </div>
-            <!-- 系统功能面板 -->
             <div class="panel">
                 <div class="card">
                     <div class="switch-row"><span>一言展示</span><div class="switch active" id="toggleHitokoto"></div></div>
@@ -250,7 +341,6 @@
                 </div>
                 <div class="btns" style="text-align:right; margin-top:10px;"><button class="btn" onclick="saveAllToCloud()">⚡ 保存开关</button></div>
             </div>
-            <!-- 账本管理面板 -->
             <div class="panel">
                 <div class="status" id="ledgerStatus">✅ 已加载云端账本</div>
                 <div class="ledger-board">
@@ -271,7 +361,7 @@
                     <div class="ledger-block">
                         <div class="card">
                             <div class="ledger-stats">
-                                <span>买球/PG</span>
+                                <span>PG</span>
                                 <span>输 <span id="pgLoseBack">0</span> | 赢 <span id="pgWinBack">0</span></span>
                             </div>
                             <div class="ledger-history" id="pgHistoryBack"></div>
@@ -282,6 +372,20 @@
                             </div>
                         </div>
                     </div>
+                    <div class="ledger-block">
+                        <div class="card">
+                            <div class="ledger-stats">
+                                <span>买球</span>
+                                <span>输 <span id="buyballLoseBack">0</span> | 赢 <span id="buyballWinBack">0</span></span>
+                            </div>
+                            <div class="ledger-history" id="buyballHistoryBack"></div>
+                            <div class="ledger-input-area">
+                                <input type="number" id="buyballAmount" placeholder="金额" min="1">
+                                <button class="btn btn-lose" onclick="addLedger('buyball','lose')">输</button>
+                                <button class="btn btn-win" onclick="addLedger('buyball','win')">赢</button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -289,9 +393,8 @@
 </div>
 
 <script>
-    // ==================== 登录验证逻辑 ====================
-    const VALID_PASSWORD = 'xy123';   // ⚠️ 修改为你想要的密码
-    
+    const VALID_PASSWORD = 'xy123';
+
     const loginBox = document.getElementById('loginBox');
     const adminMain = document.getElementById('adminMain');
     const loginForm = document.getElementById('loginForm');
@@ -299,23 +402,22 @@
     const submitBtn = document.getElementById('submitBtn');
     const messageBox = document.getElementById('messageBox');
 
-    // 检查是否已经登录（localStorage 标记）
     if (localStorage.getItem('admin_logged_in') === 'true') {
         loginBox.style.display = 'none';
         adminMain.style.display = 'block';
-        initAdmin();   // 初始化后台功能
+        initAdmin();
     }
 
     loginForm.addEventListener('submit', function(e) {
         e.preventDefault();
         const password = passwordInput.value.trim();
-        
+
         if (password === VALID_PASSWORD) {
             messageBox.textContent = '登录成功！正在进入后台...';
             messageBox.className = 'message success';
             submitBtn.textContent = '登录中...';
             submitBtn.disabled = true;
-            
+
             setTimeout(() => {
                 localStorage.setItem('admin_logged_in', 'true');
                 loginBox.style.display = 'none';
@@ -330,13 +432,10 @@
         }
     });
 
-    // ==================== 后台功能初始化 ====================
     function initAdmin() {
-        // 定义全局变量（避免与登录脚本冲突）
         window.tabs = document.querySelectorAll('.tab');
         window.panels = document.querySelectorAll('.panel');
-        
-        // 标签页切换
+
         tabs.forEach((t, i) => {
             t.addEventListener('click', () => {
                 tabs.forEach(tab => tab.classList.remove('active'));
@@ -346,92 +445,34 @@
             });
         });
 
-        // 开关交互
         ['toggleHitokoto','toggleParticles','toggleStars'].forEach(id => {
             document.getElementById(id).addEventListener('click', function(){ this.classList.toggle('active'); });
         });
 
-        // 暴露保存函数到全局
         window.saveAllToCloud = saveAllToCloud;
         window.addLedger = addLedger;
 
-        // JSONBin 配置
         const BIN_ID = '6a2a15f7da38895dfeaa9630';
         const API_KEY = '$2a$10$hxCwaa9VTSuns2o6OiUV/.gEIZ1wzMQYlNgwWVf1OfXDNY1lJMkGO';
         const BIN_URL = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
 
-        // 全局账本数据
-        let ledgerData = { lhc: { win: 0, lose: 0, history: [] }, pg: { win: 0, lose: 0, history: [] } };
-
-        // 加载云端配置
-        async function loadFromCloud() {
-            try {
-                const res = await fetch(`${BIN_URL}/latest`, { headers: { 'X-Master-Key': API_KEY } });
-                const json = await res.json();
-                const data = json.record || {};
-
-                document.getElementById('adminName').value = data.title || 'Yukecil';
-                document.getElementById('adminEmail').value = data.email || '';
-                document.getElementById('adminTelegram').value = data.telegram || '';
-                document.getElementById('adminAvatar').value = data.avatar || '';
-                document.getElementById('adminBgMobile').value = data.bgMobile || '';
-                document.getElementById('adminBgDesktop').value = data.bgDesktop || '';
-                document.getElementById('toggleHitokoto').classList.toggle('active', data.hitokotoEnabled !== false);
-                document.getElementById('toggleParticles').classList.toggle('active', data.particlesEnabled !== false);
-                document.getElementById('toggleStars').classList.toggle('active', data.starsEnabled !== false);
-
-                if (data.ledger) ledgerData = data.ledger;
-                updateLedgerBackUI();
-                document.getElementById('syncStatus').textContent = '✅ 已加载云端配置';
-                document.getElementById('ledgerStatus').textContent = '✅ 已加载云端账本';
-            } catch (e) {
-                document.getElementById('syncStatus').textContent = '❌ 加载失败';
-            }
-        }
-
-        async function saveAllToCloud() {
-            const statusEl = document.getElementById('syncStatus');
-            statusEl.textContent = '⏳ 正在保存...';
-            let currentData = {};
-            try {
-                const res = await fetch(`${BIN_URL}/latest`, { headers: { 'X-Master-Key': API_KEY } });
-                const json = await res.json();
-                currentData = json.record || {};
-            } catch (e) {}
-
-            const newData = {
-                title: document.getElementById('adminName').value.trim(),
-                email: document.getElementById('adminEmail').value.trim(),
-                telegram: document.getElementById('adminTelegram').value.trim(),
-                avatar: document.getElementById('adminAvatar').value.trim(),
-                bgMobile: document.getElementById('adminBgMobile').value.trim(),
-                bgDesktop: document.getElementById('adminBgDesktop').value.trim(),
-                hitokotoEnabled: document.getElementById('toggleHitokoto').classList.contains('active'),
-                particlesEnabled: document.getElementById('toggleParticles').classList.contains('active'),
-                starsEnabled: document.getElementById('toggleStars').classList.contains('active'),
-                ledger: currentData.ledger || ledgerData
-            };
-
-            try {
-                await fetch(BIN_URL, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json', 'X-Master-Key': API_KEY },
-                    body: JSON.stringify(newData)
-                });
-                statusEl.textContent = '✅ 已保存';
-            } catch (e) {
-                statusEl.textContent = '❌ 保存失败';
-            }
-        }
+        let ledgerData = {
+            lhc: { win: 0, lose: 0, history: [] },
+            pg: { win: 0, lose: 0, history: [] },
+            buyball: { win: 0, lose: 0, history: [] }
+        };
 
         function updateLedgerBackUI() {
             document.getElementById('lhcLoseBack').textContent = ledgerData.lhc.lose;
             document.getElementById('lhcWinBack').textContent = ledgerData.lhc.win;
             document.getElementById('pgLoseBack').textContent = ledgerData.pg.lose;
             document.getElementById('pgWinBack').textContent = ledgerData.pg.win;
+            document.getElementById('buyballLoseBack').textContent = ledgerData.buyball.lose;
+            document.getElementById('buyballWinBack').textContent = ledgerData.buyball.win;
 
             renderHistoryBack('lhc', 'lhcHistoryBack');
             renderHistoryBack('pg', 'pgHistoryBack');
+            renderHistoryBack('buyball', 'buyballHistoryBack');
         }
 
         function renderHistoryBack(type, containerId) {
@@ -475,7 +516,71 @@
             document.getElementById(`${type}Amount`).value = '';
         }
 
-        // 启动加载
+        async function loadFromCloud() {
+            try {
+                const res = await fetch(`${BIN_URL}/latest`, { headers: { 'X-Master-Key': API_KEY } });
+                const json = await res.json();
+                const data = json.record || {};
+
+                document.getElementById('adminName').value = data.title || 'Yukecil';
+                document.getElementById('adminEmail').value = data.email || '';
+                document.getElementById('adminTelegram').value = data.telegram || '';
+                document.getElementById('adminAvatar').value = data.avatar || '';
+                document.getElementById('adminBgMobile').value = data.bgMobile || '';
+                document.getElementById('adminBgDesktop').value = data.bgDesktop || '';
+                document.getElementById('toggleHitokoto').classList.toggle('active', data.hitokotoEnabled !== false);
+                document.getElementById('toggleParticles').classList.toggle('active', data.particlesEnabled !== false);
+                document.getElementById('toggleStars').classList.toggle('active', data.starsEnabled !== false);
+
+                if (data.ledger) {
+                    if (!data.ledger.buyball) data.ledger.buyball = { win: 0, lose: 0, history: [] };
+                    if (!data.ledger.pg) data.ledger.pg = { win: 0, lose: 0, history: [] };
+                    if (!data.ledger.lhc) data.ledger.lhc = { win: 0, lose: 0, history: [] };
+                    ledgerData = data.ledger;
+                    updateLedgerBackUI();
+                }
+                document.getElementById('syncStatus').textContent = '✅ 已加载云端配置';
+                document.getElementById('ledgerStatus').textContent = '✅ 已加载云端账本';
+            } catch (e) {
+                document.getElementById('syncStatus').textContent = '❌ 加载失败';
+            }
+        }
+
+        async function saveAllToCloud() {
+            const statusEl = document.getElementById('syncStatus');
+            statusEl.textContent = '⏳ 正在保存...';
+            let currentData = {};
+            try {
+                const res = await fetch(`${BIN_URL}/latest`, { headers: { 'X-Master-Key': API_KEY } });
+                const json = await res.json();
+                currentData = json.record || {};
+            } catch (e) {}
+
+            const newData = {
+                title: document.getElementById('adminName').value.trim(),
+                email: document.getElementById('adminEmail').value.trim(),
+                telegram: document.getElementById('adminTelegram').value.trim(),
+                avatar: document.getElementById('adminAvatar').value.trim(),
+                bgMobile: document.getElementById('adminBgMobile').value.trim(),
+                bgDesktop: document.getElementById('adminBgDesktop').value.trim(),
+                hitokotoEnabled: document.getElementById('toggleHitokoto').classList.contains('active'),
+                particlesEnabled: document.getElementById('toggleParticles').classList.contains('active'),
+                starsEnabled: document.getElementById('toggleStars').classList.contains('active'),
+                ledger: currentData.ledger || ledgerData
+            };
+
+            try {
+                await fetch(BIN_URL, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json', 'X-Master-Key': API_KEY },
+                    body: JSON.stringify(newData)
+                });
+                statusEl.textContent = '✅ 已保存';
+            } catch (e) {
+                statusEl.textContent = '❌ 保存失败';
+            }
+        }
+
         loadFromCloud();
     }
 </script>
