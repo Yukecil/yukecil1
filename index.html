@@ -58,7 +58,7 @@
             width: 100%;
             max-width: 480px;
         }
-        .admin-main { max-width: 900px; display: none; }
+        .admin-main { max-width: 960px; display: none; }
         .login-card {
             background: var(--card-bg);
             backdrop-filter: blur(16px);
@@ -245,6 +245,10 @@
             font-size: 14px;
         }
         .flex-right { display: flex; justify-content: flex-end; margin-top: 16px; }
+        /* 访问记录表格 */
+        .log-table { width: 100%; font-size: 13px; border-collapse: collapse; margin-top: 10px; }
+        .log-table th, .log-table td { padding: 8px 12px; border-bottom: 1px solid rgba(255,255,255,0.08); text-align: left; }
+        .log-table th { color: var(--muted); font-weight: 500; }
     </style>
 </head>
 <body>
@@ -275,6 +279,7 @@
             <div class="tab" data-tab="appearance">外观设置</div>
             <div class="tab" data-tab="settings">系统功能</div>
             <div class="tab" data-tab="ledger">账本管理</div>
+            <div class="tab" data-tab="logs">访问记录</div>
         </div>
 
         <div class="tab-content">
@@ -282,79 +287,41 @@
             <div class="panel active" id="panel-profile">
                 <span class="status-badge" id="syncStatus">✅ 已加载云端配置</span>
                 <div class="form-grid">
-                    <div class="form-group">
-                        <label>昵称</label>
-                        <input id="adminName" value="Yukecil">
-                    </div>
-                    <div class="form-group">
-                        <label>邮箱</label>
-                        <input id="adminEmail" value="hello@example.com">
-                    </div>
-                    <div class="form-group">
-                        <label>Telegram (不含@)</label>
-                        <input id="adminTelegram" value="yourname">
-                    </div>
-                    <div class="form-group">
-                        <label>自定义一言（可选）</label>
-                        <input id="adminText" placeholder="留空则使用每日一言">
-                    </div>
+                    <div class="form-group"><label>昵称</label><input id="adminName" value="Yukecil"></div>
+                    <div class="form-group"><label>邮箱</label><input id="adminEmail" value="hello@example.com"></div>
+                    <div class="form-group"><label>Telegram (不含@)</label><input id="adminTelegram" value="yourname"></div>
+                    <div class="form-group"><label>自定义一言（可选）</label><input id="adminText" placeholder="留空则使用每日一言"></div>
                 </div>
-                <div class="flex-right">
-                    <button class="btn btn-save" id="saveProfileBtn">💾 保存</button>
-                </div>
+                <div class="flex-right"><button class="btn btn-save" id="saveProfileBtn">💾 保存</button></div>
             </div>
 
             <!-- 外观设置 -->
             <div class="panel" id="panel-appearance">
                 <span class="status-badge" id="statusAppearance">✅ 已保存</span>
                 <div class="form-grid">
-                    <div class="form-group">
-                        <label>头像URL</label>
-                        <input id="adminAvatar" placeholder="https://...">
-                    </div>
-                    <div class="form-group">
-                        <label>手机端背景URL</label>
-                        <input id="adminBgMobile" placeholder="https://...">
-                    </div>
-                    <div class="form-group">
-                        <label>电脑端背景URL</label>
-                        <input id="adminBgDesktop" placeholder="https://...">
-                    </div>
+                    <div class="form-group"><label>头像URL</label><input id="adminAvatar" placeholder="https://..."></div>
+                    <div class="form-group"><label>手机端背景URL</label><input id="adminBgMobile" placeholder="https://..."></div>
+                    <div class="form-group"><label>电脑端背景URL</label><input id="adminBgDesktop" placeholder="https://..."></div>
                 </div>
-                <div class="flex-right">
-                    <button class="btn btn-save" id="saveAppearanceBtn">💾 保存外观</button>
-                </div>
+                <div class="flex-right"><button class="btn btn-save" id="saveAppearanceBtn">💾 保存外观</button></div>
             </div>
 
             <!-- 系统功能 -->
             <div class="panel" id="panel-settings">
                 <span class="status-badge" id="statusSettings">✅ 已保存</span>
-                <div class="toggle-row">
-                    <span>一言展示</span>
-                    <div class="switch active" id="toggleHitokoto"></div>
-                </div>
-                <div class="toggle-row">
-                    <span>粒子动画</span>
-                    <div class="switch active" id="toggleParticles"></div>
-                </div>
-                <div class="toggle-row">
-                    <span>星空背景</span>
-                    <div class="switch active" id="toggleStars"></div>
-                </div>
-                <div class="flex-right">
-                    <button class="btn btn-save" id="saveSettingsBtn">💾 保存开关</button>
-                </div>
+                <div class="toggle-row"><span>一言展示</span><div class="switch active" id="toggleHitokoto"></div></div>
+                <div class="toggle-row"><span>粒子动画</span><div class="switch active" id="toggleParticles"></div></div>
+                <div class="toggle-row"><span>星空背景</span><div class="switch active" id="toggleStars"></div></div>
+                <div class="flex-right"><button class="btn btn-save" id="saveSettingsBtn">💾 保存开关</button></div>
             </div>
 
             <!-- 账本管理 -->
             <div class="panel" id="panel-ledger">
                 <span class="status-badge" id="ledgerStatus">✅ 已加载云端账本</span>
                 <div class="ledger-grid">
+                    <!-- 买码 -->
                     <div class="ledger-card">
-                        <div class="ledger-stats">
-                            <span>买码</span>
-                            <span>输 <span id="lhcLoseBack">0</span> | 赢 <span id="lhcWinBack">0</span></span>
-                        </div>
+                        <div class="ledger-stats"><span>买码</span><span>输 <span id="lhcLoseBack">0</span> | 赢 <span id="lhcWinBack">0</span></span></div>
                         <div class="ledger-history" id="lhcHistoryBack"></div>
                         <div class="input-area">
                             <input type="number" id="lhcAmount" placeholder="金额" min="1">
@@ -362,11 +329,9 @@
                             <button class="btn btn-win" id="lhcWinBtn">赢</button>
                         </div>
                     </div>
+                    <!-- 买球 -->
                     <div class="ledger-card">
-                        <div class="ledger-stats">
-                            <span>买球</span>
-                            <span>输 <span id="buyballLoseBack">0</span> | 赢 <span id="buyballWinBack">0</span></span>
-                        </div>
+                        <div class="ledger-stats"><span>买球</span><span>输 <span id="buyballLoseBack">0</span> | 赢 <span id="buyballWinBack">0</span></span></div>
                         <div class="ledger-history" id="buyballHistoryBack"></div>
                         <div class="input-area">
                             <input type="number" id="buyballAmount" placeholder="金额" min="1">
@@ -374,11 +339,9 @@
                             <button class="btn btn-win" id="buyballWinBtn">赢</button>
                         </div>
                     </div>
+                    <!-- PG -->
                     <div class="ledger-card">
-                        <div class="ledger-stats">
-                            <span>PG</span>
-                            <span>输 <span id="pgLoseBack">0</span> | 赢 <span id="pgWinBack">0</span></span>
-                        </div>
+                        <div class="ledger-stats"><span>PG</span><span>输 <span id="pgLoseBack">0</span> | 赢 <span id="pgWinBack">0</span></span></div>
                         <div class="ledger-history" id="pgHistoryBack"></div>
                         <div class="input-area">
                             <input type="number" id="pgAmount" placeholder="金额" min="1">
@@ -387,6 +350,17 @@
                         </div>
                     </div>
                 </div>
+            </div>
+
+            <!-- 访问记录 -->
+            <div class="panel" id="panel-logs">
+                <span class="status-badge" id="logStatus">📋 最近 20 条访问记录</span>
+                <table class="log-table">
+                    <thead><tr><th>时间</th><th>IP</th><th>地区</th></tr></thead>
+                    <tbody id="logBody">
+                        <tr><td colspan="3" style="text-align:center;color:var(--muted);">加载中...</td></tr>
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
@@ -405,11 +379,8 @@
   const passwordInput = document.getElementById('password');
   const messageBox = document.getElementById('messageBox');
 
-  let ledgerData = {
-    lhc: { win: 0, lose: 0, history: [] },
-    pg: { win: 0, lose: 0, history: [] },
-    buyball: { win: 0, lose: 0, history: [] }
-  };
+  let ledgerData = { lhc: { win:0, lose:0, history:[] }, pg: { win:0, lose:0, history:[] }, buyball: { win:0, lose:0, history:[] } };
+  let accessLog = [];
 
   if (localStorage.getItem('admin_logged_in') === 'true') {
     loginBox.style.display = 'none';
@@ -435,8 +406,44 @@
     }
   });
 
+  // 获取IP和地区
+  async function fetchIP() {
+    try { const res = await fetch('https://api.ipify.org?format=json'); return (await res.json()).ip; } catch { return '未知IP'; }
+  }
+  async function fetchCity(ip) {
+    try { const res = await fetch(`https://ipapi.co/${ip}/json/`); const d = await res.json(); return `${d.city||''} ${d.region||''} ${d.country_name||''}`.trim() || '未知地区'; } catch { return '未知地区'; }
+  }
+
+  // 记录访问并同步
+  async function recordAccess() {
+    const ip = await fetchIP();
+    const city = await fetchCity(ip);
+    const now = new Date();
+    const timeStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
+    accessLog.push({ time: timeStr, ip, city });
+    if (accessLog.length > 20) accessLog = accessLog.slice(-20);
+    try {
+      const res = await fetch(`${BIN_URL}/latest`, { headers: { 'X-Master-Key': API_KEY } });
+      const cloudData = (await res.json()).record || {};
+      cloudData.accessLog = accessLog;
+      await fetch(BIN_URL, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', 'X-Master-Key': API_KEY },
+        body: JSON.stringify(cloudData)
+      });
+    } catch(e){}
+  }
+
+  function renderAccessLog() {
+    const tbody = document.getElementById('logBody');
+    if (!accessLog || accessLog.length===0) {
+      tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;color:var(--muted);">暂无记录</td></tr>';
+      return;
+    }
+    tbody.innerHTML = accessLog.slice().reverse().map(l => `<tr><td>${l.time}</td><td>${l.ip}</td><td>${l.city}</td></tr>`).join('');
+  }
+
   function initAdmin() {
-    // 标签页切换
     document.querySelectorAll('.tab').forEach(tab => {
       tab.addEventListener('click', () => {
         const target = tab.getAttribute('data-tab');
@@ -447,23 +454,20 @@
       });
     });
 
-    // 开关
     ['toggleHitokoto','toggleParticles','toggleStars'].forEach(id => {
       document.getElementById(id).addEventListener('click', function(){ this.classList.toggle('active'); });
     });
 
-    // 保存按钮绑定
     document.getElementById('saveProfileBtn').addEventListener('click', saveAllToCloud);
     document.getElementById('saveAppearanceBtn').addEventListener('click', saveAllToCloud);
     document.getElementById('saveSettingsBtn').addEventListener('click', saveAllToCloud);
 
-    // 账本按钮绑定
-    document.getElementById('lhcLoseBtn').addEventListener('click', () => addLedger('lhc','lose'));
-    document.getElementById('lhcWinBtn').addEventListener('click', () => addLedger('lhc','win'));
-    document.getElementById('buyballLoseBtn').addEventListener('click', () => addLedger('buyball','lose'));
-    document.getElementById('buyballWinBtn').addEventListener('click', () => addLedger('buyball','win'));
-    document.getElementById('pgLoseBtn').addEventListener('click', () => addLedger('pg','lose'));
-    document.getElementById('pgWinBtn').addEventListener('click', () => addLedger('pg','win'));
+    document.getElementById('lhcLoseBtn').addEventListener('click', ()=>addLedger('lhc','lose'));
+    document.getElementById('lhcWinBtn').addEventListener('click', ()=>addLedger('lhc','win'));
+    document.getElementById('buyballLoseBtn').addEventListener('click', ()=>addLedger('buyball','lose'));
+    document.getElementById('buyballWinBtn').addEventListener('click', ()=>addLedger('buyball','win'));
+    document.getElementById('pgLoseBtn').addEventListener('click', ()=>addLedger('pg','lose'));
+    document.getElementById('pgWinBtn').addEventListener('click', ()=>addLedger('pg','win'));
 
     function updateLedgerUI() {
       document.getElementById('lhcLoseBack').textContent = ledgerData.lhc.lose;
@@ -472,145 +476,110 @@
       document.getElementById('buyballWinBack').textContent = ledgerData.buyball.win;
       document.getElementById('pgLoseBack').textContent = ledgerData.pg.lose;
       document.getElementById('pgWinBack').textContent = ledgerData.pg.win;
-
-      renderHistory('lhc', 'lhcHistoryBack');
-      renderHistory('buyball', 'buyballHistoryBack');
-      renderHistory('pg', 'pgHistoryBack');
+      renderHistory('lhc','lhcHistoryBack');
+      renderHistory('buyball','buyballHistoryBack');
+      renderHistory('pg','pgHistoryBack');
     }
 
-    function renderHistory(type, containerId) {
-      const container = document.getElementById(containerId);
-      const history = ledgerData[type].history;
-      if (!history || history.length === 0) {
-        container.innerHTML = '<div style="color:#666;text-align:center;padding:10px;">暂无记录</div>';
-        return;
-      }
-      const display = history.slice(-10).reverse();
-      container.innerHTML = display.map((item, dispIdx) => {
-        const origIdx = history.length - 1 - dispIdx;
-        const isWin = item.action === 'win';
-        return `
-          <div class="history-item">
-            <div class="item-info">
-              <span style="color:#94a3b8;">${item.time}</span>
-              <span style="color:${isWin?'#34d399':'#f87171'}">${isWin?'+':'-'}${item.amount}</span>
-            </div>
-            <button class="btn-del" data-type="${type}" data-index="${origIdx}">✕</button>
-          </div>
-        `;
+    function renderHistory(type, cid) {
+      const c = document.getElementById(cid);
+      const h = ledgerData[type].history;
+      if(!h||h.length===0){ c.innerHTML='<div style="color:#666;text-align:center;padding:10px;">暂无记录</div>'; return; }
+      const disp = h.slice(-10).reverse();
+      c.innerHTML = disp.map((item,di)=>{
+        const oi = h.length-1-di;
+        return `<div class="history-item"><div class="item-info"><span style="color:#94a3b8;">${item.time}</span><span style="color:${item.action==='win'?'#34d399':'#f87171'}">${item.action==='win'?'+':'-'}${item.amount}</span></div><button class="btn-del" data-type="${type}" data-index="${oi}">✕</button></div>`;
       }).join('');
-      container.querySelectorAll('.btn-del').forEach(btn => {
-        btn.addEventListener('click', function() {
-          const type = this.getAttribute('data-type');
-          const index = parseInt(this.getAttribute('data-index'));
-          deleteLedgerItem(type, index);
-        });
-      });
+      c.querySelectorAll('.btn-del').forEach(b=>b.addEventListener('click', function(){
+        deleteLedgerItem(this.dataset.type, parseInt(this.dataset.index));
+      }));
     }
 
-    async function deleteLedgerItem(type, index) {
-      if (!confirm('确定删除这条记录吗？')) return;
-      const history = ledgerData[type].history;
-      if (index < 0 || index >= history.length) return;
-      const item = history[index];
-      ledgerData[type][item.action] -= item.amount;
-      history.splice(index, 1);
-
-      document.getElementById('ledgerStatus').textContent = '⏳ 正在同步...';
+    async function deleteLedgerItem(type, idx) {
+      if(!confirm('确定删除？')) return;
+      const h = ledgerData[type].history;
+      if(idx<0||idx>=h.length) return;
+      const it = h[idx];
+      ledgerData[type][it.action] -= it.amount;
+      h.splice(idx,1);
+      document.getElementById('ledgerStatus').textContent = '⏳ 同步中...';
       try {
-        const res = await fetch(`${BIN_URL}/latest`, { headers: { 'X-Master-Key': API_KEY } });
-        const cloudData = (await res.json()).record || {};
-        cloudData.ledger = ledgerData;
-        await fetch(BIN_URL, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json', 'X-Master-Key': API_KEY },
-          body: JSON.stringify(cloudData)
-        });
-        document.getElementById('ledgerStatus').textContent = '✅ 同步成功';
-      } catch (e) {
-        ledgerData[type][item.action] += item.amount;
-        history.splice(index, 0, item);
-        document.getElementById('ledgerStatus').textContent = '❌ 同步失败，已恢复';
+        const r = await fetch(`${BIN_URL}/latest`,{headers:{'X-Master-Key':API_KEY}});
+        const cd = (await r.json()).record||{};
+        cd.ledger = ledgerData;
+        await fetch(BIN_URL,{method:'PUT',headers:{'Content-Type':'application/json','X-Master-Key':API_KEY},body:JSON.stringify(cd)});
+        document.getElementById('ledgerStatus').textContent = '✅ 已同步';
+      } catch(e) {
+        ledgerData[type][it.action] += it.amount;
+        h.splice(idx,0,it);
+        document.getElementById('ledgerStatus').textContent = '❌ 失败';
       }
       updateLedgerUI();
     }
 
     async function addLedger(type, action) {
-      const input = document.getElementById(`${type}Amount`);
-      const amount = parseInt(input.value);
-      if (!amount || amount <= 0) return alert('请输入有效金额');
-      ledgerData[type][action] += amount;
+      const inp = document.getElementById(`${type}Amount`);
+      const v = parseInt(inp.value);
+      if(!v||v<=0) return alert('请输入有效金额');
+      ledgerData[type][action] += v;
       const now = new Date();
-      const timeStr = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
-      ledgerData[type].history.push({ action, amount, time: timeStr });
-
-      document.getElementById('ledgerStatus').textContent = '⏳ 正在同步...';
+      ledgerData[type].history.push({action, amount:v, time:`${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`});
+      document.getElementById('ledgerStatus').textContent = '⏳ 同步中...';
       try {
-        const res = await fetch(`${BIN_URL}/latest`, { headers: { 'X-Master-Key': API_KEY } });
-        const cloudData = (await res.json()).record || {};
-        cloudData.ledger = ledgerData;
-        await fetch(BIN_URL, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json', 'X-Master-Key': API_KEY },
-          body: JSON.stringify(cloudData)
-        });
+        const r = await fetch(`${BIN_URL}/latest`,{headers:{'X-Master-Key':API_KEY}});
+        const cd = (await r.json()).record||{};
+        cd.ledger = ledgerData;
+        await fetch(BIN_URL,{method:'PUT',headers:{'Content-Type':'application/json','X-Master-Key':API_KEY},body:JSON.stringify(cd)});
         document.getElementById('ledgerStatus').textContent = '✅ 已同步';
-      } catch (e) {
-        document.getElementById('ledgerStatus').textContent = '❌ 同步失败';
+      } catch(e) {
+        document.getElementById('ledgerStatus').textContent = '❌ 失败';
       }
       updateLedgerUI();
-      input.value = '';
+      inp.value='';
     }
 
     async function loadCloudConfig() {
       try {
-        const res = await fetch(`${BIN_URL}/latest`, { headers: { 'X-Master-Key': API_KEY } });
-        const data = (await res.json()).record || {};
-        document.getElementById('adminName').value = data.title || 'Yukecil';
-        document.getElementById('adminEmail').value = data.email || '';
-        document.getElementById('adminTelegram').value = data.telegram || '';
-        document.getElementById('adminAvatar').value = data.avatar || '';
-        document.getElementById('adminBgMobile').value = data.bgMobile || '';
-        document.getElementById('adminBgDesktop').value = data.bgDesktop || '';
-        document.getElementById('adminText').value = data.text || '';
-        document.getElementById('toggleHitokoto').classList.toggle('active', data.hitokotoEnabled !== false);
-        document.getElementById('toggleParticles').classList.toggle('active', data.particlesEnabled !== false);
-        document.getElementById('toggleStars').classList.toggle('active', data.starsEnabled !== false);
-
-        if (data.ledger) {
-          if (!data.ledger.buyball) data.ledger.buyball = { win:0, lose:0, history:[] };
-          if (!data.ledger.pg) data.ledger.pg = { win:0, lose:0, history:[] };
-          if (!data.ledger.lhc) data.ledger.lhc = { win:0, lose:0, history:[] };
+        const r = await fetch(`${BIN_URL}/latest`,{headers:{'X-Master-Key':API_KEY}});
+        const data = (await r.json()).record||{};
+        document.getElementById('adminName').value = data.title||'Yukecil';
+        document.getElementById('adminEmail').value = data.email||'';
+        document.getElementById('adminTelegram').value = data.telegram||'';
+        document.getElementById('adminAvatar').value = data.avatar||'';
+        document.getElementById('adminBgMobile').value = data.bgMobile||'';
+        document.getElementById('adminBgDesktop').value = data.bgDesktop||'';
+        document.getElementById('adminText').value = data.text||'';
+        document.getElementById('toggleHitokoto').classList.toggle('active', data.hitokotoEnabled!==false);
+        document.getElementById('toggleParticles').classList.toggle('active', data.particlesEnabled!==false);
+        document.getElementById('toggleStars').classList.toggle('active', data.starsEnabled!==false);
+        if(data.ledger){
+          if(!data.ledger.buyball) data.ledger.buyball={win:0,lose:0,history:[]};
+          if(!data.ledger.pg) data.ledger.pg={win:0,lose:0,history:[]};
+          if(!data.ledger.lhc) data.ledger.lhc={win:0,lose:0,history:[]};
           ledgerData = data.ledger;
           updateLedgerUI();
         }
+        if(data.accessLog) {
+          accessLog = data.accessLog;
+          renderAccessLog();
+        }
         document.getElementById('syncStatus').textContent = '✅ 已加载云端配置';
         document.getElementById('ledgerStatus').textContent = '✅ 已加载云端账本';
-      } catch (e) {
+      } catch(e) {
         document.getElementById('syncStatus').textContent = '❌ 加载失败';
       }
     }
 
     async function saveAllToCloud() {
-      // 统一更新所有面板的状态提示
-      const statusIds = ['syncStatus', 'statusAppearance', 'statusSettings'];
-      statusIds.forEach(id => {
+      ['syncStatus','statusAppearance','statusSettings'].forEach(id=>{
         const el = document.getElementById(id);
-        if (el) el.textContent = '⏳ 正在保存...';
+        if(el) el.textContent = '⏳ 正在保存...';
       });
-
       let currentData = {};
       try {
-        const res = await fetch(`${BIN_URL}/latest`, { headers: { 'X-Master-Key': API_KEY } });
-        currentData = (await res.json()).record || {};
-      } catch (e) {
-        statusIds.forEach(id => {
-          const el = document.getElementById(id);
-          if (el) el.textContent = '❌ 读取云端失败';
-        });
-        return;
-      }
-
+        const r = await fetch(`${BIN_URL}/latest`,{headers:{'X-Master-Key':API_KEY}});
+        currentData = (await r.json()).record||{};
+      } catch(e) { return; }
       const newData = {
         title: document.getElementById('adminName').value.trim(),
         email: document.getElementById('adminEmail').value.trim(),
@@ -622,27 +591,27 @@
         hitokotoEnabled: document.getElementById('toggleHitokoto').classList.contains('active'),
         particlesEnabled: document.getElementById('toggleParticles').classList.contains('active'),
         starsEnabled: document.getElementById('toggleStars').classList.contains('active'),
-        ledger: currentData.ledger || ledgerData
+        ledger: currentData.ledger || ledgerData,
+        accessLog: currentData.accessLog || accessLog
       };
-
       try {
-        await fetch(BIN_URL, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json', 'X-Master-Key': API_KEY },
-          body: JSON.stringify(newData)
-        });
-        statusIds.forEach(id => {
+        await fetch(BIN_URL,{method:'PUT',headers:{'Content-Type':'application/json','X-Master-Key':API_KEY},body:JSON.stringify(newData)});
+        ['syncStatus','statusAppearance','statusSettings'].forEach(id=>{
           const el = document.getElementById(id);
-          if (el) el.textContent = '✅ 已保存到云端';
+          if(el) el.textContent = '✅ 已保存到云端';
         });
-      } catch (e) {
-        statusIds.forEach(id => {
+      } catch(e) {
+        ['syncStatus','statusAppearance','statusSettings'].forEach(id=>{
           const el = document.getElementById(id);
-          if (el) el.textContent = '❌ 保存失败';
+          if(el) el.textContent = '❌ 保存失败';
         });
       }
     }
 
+    // 初始化：记录一次访问并渲染
+    recordAccess().then(() => {
+      renderAccessLog();
+    });
     loadCloudConfig();
   }
 })();
