@@ -276,8 +276,24 @@
         .ledger-item {
             display: flex;
             justify-content: space-between;
+            align-items: center;
             padding: 4px 0;
             border-bottom: 1px dashed #ccc;
+        }
+        .ledger-item .item-info {
+            display: flex;
+            justify-content: space-between;
+            flex: 1;
+        }
+        .btn-del {
+            background: none;
+            border: none;
+            color: #c62828;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 14px;
+            margin-left: 8px;
+            padding: 0 4px;
         }
         .ledger-input-area { display: flex; gap: 8px; align-items: center; }
         .ledger-input-area input { flex: 1; padding: 8px; border: 2px solid #1b0f2a; border-radius: 8px; }
@@ -320,6 +336,7 @@
             <div class="tab">账本管理</div>
         </div>
         <div class="content">
+            <!-- 资料编辑面板 -->
             <div class="panel active">
                 <div class="status" id="syncStatus">✅ 就绪</div>
                 <div class="card"><label>昵称</label><input id="adminName" value="Yukecil"></div>
@@ -327,12 +344,14 @@
                 <div class="card"><label>Telegram</label><input id="adminTelegram" value="@yourname"></div>
                 <div class="btns" style="text-align:right; margin-top:10px;"><button class="btn" onclick="saveAllToCloud()">💾 保存</button></div>
             </div>
+            <!-- 外观设置面板 -->
             <div class="panel">
                 <div class="card"><label>头像地址</label><input id="adminAvatar" placeholder="https://..."></div>
                 <div class="card"><label>手机背景</label><input id="adminBgMobile" placeholder="手机端背景URL"></div>
                 <div class="card"><label>电脑背景</label><input id="adminBgDesktop" placeholder="电脑端背景URL"></div>
                 <div class="btns" style="text-align:right; margin-top:10px;"><button class="btn" onclick="saveAllToCloud()">🖼️ 保存</button></div>
             </div>
+            <!-- 系统功能面板 -->
             <div class="panel">
                 <div class="card">
                     <div class="switch-row"><span>一言展示</span><div class="switch active" id="toggleHitokoto"></div></div>
@@ -341,9 +360,11 @@
                 </div>
                 <div class="btns" style="text-align:right; margin-top:10px;"><button class="btn" onclick="saveAllToCloud()">⚡ 保存开关</button></div>
             </div>
+            <!-- 账本管理面板 -->
             <div class="panel">
                 <div class="status" id="ledgerStatus">✅ 已加载云端账本</div>
                 <div class="ledger-board">
+                    <!-- 六合彩 -->
                     <div class="ledger-block">
                         <div class="card">
                             <div class="ledger-stats">
@@ -358,6 +379,7 @@
                             </div>
                         </div>
                     </div>
+                    <!-- PG -->
                     <div class="ledger-block">
                         <div class="card">
                             <div class="ledger-stats">
@@ -372,6 +394,7 @@
                             </div>
                         </div>
                     </div>
+                    <!-- 买球 -->
                     <div class="ledger-block">
                         <div class="card">
                             <div class="ledger-stats">
@@ -451,6 +474,7 @@
 
         window.saveAllToCloud = saveAllToCloud;
         window.addLedger = addLedger;
+        window.deleteLedgerItem = deleteLedgerItem;
 
         const BIN_ID = '6a2a15f7da38895dfeaa9630';
         const API_KEY = '$2a$10$hxCwaa9VTSuns2o6OiUV/.gEIZ1wzMQYlNgwWVf1OfXDNY1lJMkGO';
@@ -482,10 +506,55 @@
                 container.innerHTML = '<div style="text-align:center;color:#666;">暂无记录</div>';
                 return;
             }
-            container.innerHTML = history.slice(-10).reverse().map(item => {
+            // 最新10条倒序显示
+            const display = history.slice(-10).reverse();
+            container.innerHTML = display.map((item, displayIndex) => {
+                // 计算原始索引：history 总长度 - 10 + displayIndex? 我们用原始数组索引
+                const originalIndex = history.length - 10 + displayIndex;
                 const isWin = item.action === 'win';
-                return `<div class="ledger-item"><span>${item.time}</span><span style="color:${isWin?'green':'red'}">${isWin?'+':'-'}${item.amount}</span></div>`;
+                return `
+                    <div class="ledger-item">
+                        <div class="item-info">
+                            <span>${item.time}</span>
+                            <span style="color:${isWin?'green':'red'}">${isWin?'+':'-'}${item.amount}</span>
+                        </div>
+                        <button class="btn-del" onclick="deleteLedgerItem('${type}', ${originalIndex})">✕</button>
+                    </div>
+                `;
             }).join('');
+        }
+
+        async function deleteLedgerItem(type, index) {
+            if (!confirm('确定要删除这条记录吗？')) return;
+            const history = ledgerData[type].history;
+            if (index < 0 || index >= history.length) return;
+
+            // 回退统计
+            const item = history[index];
+            ledgerData[type][item.action] -= item.amount;
+            // 删除记录
+            history.splice(index, 1);
+
+            // 云端同步
+            try {
+                const res = await fetch(`${BIN_URL}/latest`, { headers: { 'X-Master-Key': API_KEY } });
+                const json = await res.json();
+                const cloudData = json.record || {};
+                cloudData.ledger = ledgerData;
+                await fetch(BIN_URL, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json', 'X-Master-Key': API_KEY },
+                    body: JSON.stringify(cloudData)
+                });
+                document.getElementById('ledgerStatus').textContent = '✅ 已同步';
+            } catch (e) {
+                document.getElementById('ledgerStatus').textContent = '❌ 同步失败';
+                // 操作回滚（简单恢复）
+                ledgerData[type][item.action] += item.amount;
+                history.splice(index, 0, item);
+                return;
+            }
+            updateLedgerBackUI();
         }
 
         async function addLedger(type, action) {
