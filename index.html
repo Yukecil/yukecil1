@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>挂逼后台</title>
+    <title>挂逼 · 后台</title>
     <style>
         :root {
             --bg: #0a0a1a;
@@ -278,6 +278,7 @@
         </div>
 
         <div class="tab-content">
+            <!-- 资料编辑 -->
             <div class="panel active" id="panel-profile">
                 <span class="status-badge" id="syncStatus">✅ 已加载云端配置</span>
                 <div class="form-grid">
@@ -303,7 +304,9 @@
                 </div>
             </div>
 
+            <!-- 外观设置 -->
             <div class="panel" id="panel-appearance">
+                <span class="status-badge" id="statusAppearance">✅ 已保存</span>
                 <div class="form-grid">
                     <div class="form-group">
                         <label>头像URL</label>
@@ -323,7 +326,9 @@
                 </div>
             </div>
 
+            <!-- 系统功能 -->
             <div class="panel" id="panel-settings">
+                <span class="status-badge" id="statusSettings">✅ 已保存</span>
                 <div class="toggle-row">
                     <span>一言展示</span>
                     <div class="switch active" id="toggleHitokoto"></div>
@@ -341,10 +346,10 @@
                 </div>
             </div>
 
+            <!-- 账本管理 -->
             <div class="panel" id="panel-ledger">
                 <span class="status-badge" id="ledgerStatus">✅ 已加载云端账本</span>
                 <div class="ledger-grid">
-                    <!-- 买码（原六合彩） -->
                     <div class="ledger-card">
                         <div class="ledger-stats">
                             <span>买码</span>
@@ -357,7 +362,6 @@
                             <button class="btn btn-win" id="lhcWinBtn">赢</button>
                         </div>
                     </div>
-                    <!-- 买球 -->
                     <div class="ledger-card">
                         <div class="ledger-stats">
                             <span>买球</span>
@@ -370,7 +374,6 @@
                             <button class="btn btn-win" id="buyballWinBtn">赢</button>
                         </div>
                     </div>
-                    <!-- PG -->
                     <div class="ledger-card">
                         <div class="ledger-stats">
                             <span>PG</span>
@@ -449,7 +452,7 @@
       document.getElementById(id).addEventListener('click', function(){ this.classList.toggle('active'); });
     });
 
-    // 保存按钮
+    // 保存按钮绑定
     document.getElementById('saveProfileBtn').addEventListener('click', saveAllToCloud);
     document.getElementById('saveAppearanceBtn').addEventListener('click', saveAllToCloud);
     document.getElementById('saveSettingsBtn').addEventListener('click', saveAllToCloud);
@@ -513,6 +516,7 @@
       ledgerData[type][item.action] -= item.amount;
       history.splice(index, 1);
 
+      document.getElementById('ledgerStatus').textContent = '⏳ 正在同步...';
       try {
         const res = await fetch(`${BIN_URL}/latest`, { headers: { 'X-Master-Key': API_KEY } });
         const cloudData = (await res.json()).record || {};
@@ -540,6 +544,7 @@
       const timeStr = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
       ledgerData[type].history.push({ action, amount, time: timeStr });
 
+      document.getElementById('ledgerStatus').textContent = '⏳ 正在同步...';
       try {
         const res = await fetch(`${BIN_URL}/latest`, { headers: { 'X-Master-Key': API_KEY } });
         const cloudData = (await res.json()).record || {};
@@ -587,13 +592,24 @@
     }
 
     async function saveAllToCloud() {
-      const statusEl = document.getElementById('syncStatus');
-      statusEl.textContent = '⏳ 正在保存...';
+      // 统一更新所有面板的状态提示
+      const statusIds = ['syncStatus', 'statusAppearance', 'statusSettings'];
+      statusIds.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = '⏳ 正在保存...';
+      });
+
       let currentData = {};
       try {
         const res = await fetch(`${BIN_URL}/latest`, { headers: { 'X-Master-Key': API_KEY } });
         currentData = (await res.json()).record || {};
-      } catch (e) {}
+      } catch (e) {
+        statusIds.forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.textContent = '❌ 读取云端失败';
+        });
+        return;
+      }
 
       const newData = {
         title: document.getElementById('adminName').value.trim(),
@@ -615,9 +631,15 @@
           headers: { 'Content-Type': 'application/json', 'X-Master-Key': API_KEY },
           body: JSON.stringify(newData)
         });
-        statusEl.textContent = '✅ 已保存到云端';
+        statusIds.forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.textContent = '✅ 已保存到云端';
+        });
       } catch (e) {
-        statusEl.textContent = '❌ 保存失败';
+        statusIds.forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.textContent = '❌ 保存失败';
+        });
       }
     }
 
